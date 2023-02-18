@@ -2,11 +2,9 @@
 
 Request/response interception proof-of-concept
 
----
+Tested with Python 3.11.
 
-## Azure Search Cognitive Skills
-For instructions on adding your API as a Custom Cognitive Skill in Azure Search see:
-https://docs.microsoft.com/en-us/azure/search/cognitive-search-custom-skill-interface
+---
 
 ## Resources
 This project has two key dependencies:
@@ -22,7 +20,10 @@ To run locally in debug mode run:
 
 ```
 cd ./koboldai_interceptor
-bash ./create_virtualenv.sh
+python3 -m venv venv
+source venv/bin/activate
+pip3 install --upgrade pip
+pip3 install -r requirements.txt
 uvicorn app.api:app --reload
 ```
 Open your browser to http://localhost:8000/docs to view the OpenAPI UI.
@@ -33,8 +34,3 @@ Open your browser to http://localhost:8000/docs to view the OpenAPI UI.
 For an alternate view of the docs navigate to http://localhost:8000/redoc
 
 ---
-
-## Deploy with Azure Pipelines
-Follow this guide to setup an Azure Resource Group with instances of Azure Kubernetes Service and Azure Container Registry and setup CI / CD with Azure Pipelines.
-
-https://docs.microsoft.com/en-us/azure/devops/pipelines/ecosystems/kubernetes/aks-template?view=azure-devops

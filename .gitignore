@@ -53,3 +53,6 @@ output/
 
 myflaskapp/
 bower_components
+
+/venv/
+__pycache__

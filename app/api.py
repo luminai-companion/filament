@@ -4,7 +4,7 @@
 from collections import defaultdict
 import os
 
-from dotenv import load_dotenv, find_dotenv
+#from dotenv import load_dotenv, find_dotenv
 from fastapi import Body, FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
