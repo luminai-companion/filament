@@ -2,8 +2,6 @@
 
 Request/response interception proof-of-concept
 
-Tested with Python 3.11.
-
 ---
 
 ## Resources
@@ -16,7 +14,21 @@ This project has two key dependencies:
 ---
 
 ## Run Locally
-To run locally in debug mode run:
+
+Requirements:
+- Python 3.10
+- Docker
+- Node.js
+
+Tested with Python 3.10.10.
+
+Run koboldai/koboldai:united Docker image with port 5000 in the container mapped to port 5000 on your local machine.
+
+Browse to the KoboldAI interface at http://127.0.0.1:5000 and load the LLM of your choice.
+
+Alternatively, if your local machine can't handle an LLM, rent a GPU somewhere and use that URL/port instead.
+
+Start koboldai-interceptor locally:
 
 ```
 cd ./koboldai_interceptor
@@ -24,13 +36,15 @@ python3 -m venv venv
 source venv/bin/activate
 pip3 install --upgrade pip
 pip3 install -r requirements.txt
-uvicorn app.api:app --reload
+uvicorn app.api:app --port 9000 --reload
 ```
-Open your browser to http://localhost:8000/docs to view the OpenAPI UI.
 
-![Open API Image](./images/cookiecutter-docs.png)
+Start TavernAI from its directory with:
 
+```
+node server.js
+```
 
-For an alternate view of the docs navigate to http://localhost:8000/redoc
+This will start TavernAI on port 8000 on your local machine.
 
----
+In TavernAI settings, set the KoboldAI API url to http://127.0.0.1:5000/api (or your rented GPU instance URL) and start chatting!

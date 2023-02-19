@@ -6,8 +6,8 @@ import os
 
 # from dotenv import load_dotenv, find_dotenv
 from fastapi import Body, FastAPI, Request
-from starlette.middleware.cors import CORSMiddleware
-from starlette.responses import RedirectResponse
+from starlette.responses import RedirectResponse, JSONResponse
+import httpx
 import spacy
 import srsly
 import uvicorn
@@ -32,10 +32,19 @@ example_request = srsly.read_json("app/data/example_request.json")
 nlp = spacy.load("en_core_web_sm")
 extractor = SpacyExtractor(nlp)
 
+kobold_url = "http://127.0.0.1:5000/api"
+
 
 @app.get("/", include_in_schema=False)
 def docs_redirect():
     return RedirectResponse(f"/docs")
+
+
+@app.get("/api/{path:path}")
+def handle_get(request: Request, path: str):
+    url = f"{kobold_url}/{path}"
+    r = httpx.get(url)
+    return JSONResponse(status_code=r.status_code, content=r.text)
 
 
 @app.post("/entities", response_model=RecordsResponse, tags=["NER"])
