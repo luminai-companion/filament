@@ -20,7 +20,10 @@ class SpacyExtractor:
         """Return a list of dictionaries with extracted entities and their document's ID
         from an iterable of "document" dictionaries each with an `id` and `text` property
         """
-        ids, texts = ((doc[self.doc_id_key], doc[self.doc_text_key]) for doc in records)
+        ids = texts = []
+        for doc in records:
+            ids.append(doc[self.doc_id_key])
+            texts.append(doc[self.doc_text_key])
 
         result = []
         for doc_id, spacy_doc in zip(ids, self.nlp.pipe(texts)):
