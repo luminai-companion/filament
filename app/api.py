@@ -1,19 +1,8 @@
-from collections import defaultdict
-
-from fastapi import Body, FastAPI, Request
+from fastapi import FastAPI, Request
 from starlette.responses import RedirectResponse, JSONResponse
+from typing import Union
+
 import httpx
-import spacy
-import srsly
-
-from app.models import (
-    ENT_PROP_MAP,
-    RecordsRequest,
-    RecordsResponse,
-    RecordsEntitiesByTypeResponse,
-)
-from app.spacy_extractor import SpacyExtractor
-
 
 app = FastAPI(
     title="KoboldAI Interceptor",
@@ -21,60 +10,36 @@ app = FastAPI(
     description="Request/response interception proof-of-concept",
 )
 
-example_request = srsly.read_json("app/data/example_request.json")
-
-nlp = spacy.load("en_core_web_sm")
-extractor = SpacyExtractor(nlp)
-
-kobold_url = "http://127.0.0.1:5000/api"
-
+api_url = "http://127.0.0.1:5000/api/v1"
 
 @app.get("/", include_in_schema=False)
 def docs_redirect() -> RedirectResponse:
     return RedirectResponse("/docs")
 
 
-@app.get("/api/{path:path}")
-def handle_get(request: Request, path: str) -> JSONResponse:
-    url = f"{kobold_url}/{path}"
-    r = httpx.get(url)
-    return JSONResponse(status_code=r.status_code, content=r.text)
+@app.get("/api/v1/{path:path}")
+def handle_get(path: str, q: Union[str, None] = None) -> JSONResponse:
+    url = f"{api_url}/{path}"
+    response = httpx.get(url, params=q)
 
+    return JSONResponse(response.json(), status_code=response.status_code)
 
-@app.post("/entities", response_model=RecordsResponse, tags=["NER"])
-async def extract_entities(body: RecordsRequest = Body(..., example=example_request)) -> dict:
-    """Extract Named Entities from a batch of Records."""
+@app.post("/api/v1/generate")
+async def handle_generate(request: Request) -> JSONResponse:
+    headers = {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+    }
 
-    documents = ({"id": val.recordId, "text": val.data.text} for val in body.values)
-    extracted_entities = extractor.extract_entities(documents)
+    payload = await request.json()
+    payload["prompt"] = "Once upon a time, "  # example interception
 
-    result = [
-        {"recordId": er["id"], "data": {"entities": er["entities"]}} for er in extracted_entities
-    ]
+    # TODO could make this async with httpx
+    response = httpx.post(
+        f"{api_url}/generate",
+        headers=headers,
+        json=payload
+    )
 
-    return {"values": result}
-
-
-@app.post("/entities_by_type", response_model=RecordsEntitiesByTypeResponse, tags=["NER"])
-async def extract_entities_by_type(
-    body: RecordsRequest = Body(..., example=example_request)
-) -> dict:
-    """Extract Named Entities from a batch of Records separated by entity label.
-    This route can be used directly as a Cognitive Skill in Azure Search
-    For Documentation on integration with Azure Search, see here:
-    https://docs.microsoft.com/en-us/azure/search/cognitive-search-custom-skill-interface
-    """
-
-    documents = ({"id": val.recordId, "text": val.data.text} for val in body.values)
-    extracted_entities = extractor.extract_entities(documents)
-
-    result = []
-    for er in extracted_entities:
-        groupby = defaultdict(list)
-        for ent in er["entities"]:
-            ent_prop = ENT_PROP_MAP[ent["label"]]
-            groupby[ent_prop].append(ent["name"])
-        record = {"recordId": er["id"], "data": groupby}
-        result.append(record)
-
-    return {"values": result}
+    json_response = JSONResponse(response.json(), status_code=response.status_code)
+    return json_response
