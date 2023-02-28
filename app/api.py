@@ -12,6 +12,7 @@ app = FastAPI(
 
 api_url = "http://127.0.0.1:5000/api/v1"
 
+
 @app.get("/", include_in_schema=False)
 def docs_redirect() -> RedirectResponse:
     return RedirectResponse("/docs")
