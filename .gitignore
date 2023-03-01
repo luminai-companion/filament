@@ -7,6 +7,8 @@ forge.yaml
 
 *.py[cod]
 
+covreport.xml
+
 # C extensions
 *.so
 
