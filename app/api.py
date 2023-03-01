@@ -26,12 +26,12 @@ def handle_get(path: str, q: Union[str, None] = None) -> JSONResponse:
     return JSONResponse(response.json(), status_code=response.status_code)
 
 
-def process_generate_request_hooks(request):
+def process_generate_request_hooks(request: dict) -> dict:
     request["prompt"] = "Once upon a time, "  # example request interception
     return request
 
 
-def process_generate_response_hooks(response):
+def process_generate_response_hooks(response: dict) -> dict:
     response["results"][0]["text"] += " /gen /pos"  # example response interception
     return response
 
@@ -43,13 +43,11 @@ async def handle_generate(request: Request) -> JSONResponse:
         "Content-Type": "application/json",
     }
 
-    payload = await request.json()
-    payload = process_generate_request_hooks(payload)
+    payload_json = process_generate_request_hooks(await request.json())
 
     # TODO could make this async with httpx
-    raw_response = httpx.post(f"{api_url}/generate", headers=headers, json=payload)
+    post_response = httpx.post(f"{api_url}/generate", headers=headers, json=payload_json)
 
-    response = raw_response.json()
-    response = process_generate_response_hooks(response)
+    response_json = process_generate_response_hooks(post_response.json())
 
-    return JSONResponse(response, status_code=raw_response.status_code)
+    return JSONResponse(response_json, status_code=post_response.status_code)
