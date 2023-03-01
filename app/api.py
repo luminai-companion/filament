@@ -46,7 +46,9 @@ async def handle_generate(request: Request) -> JSONResponse:
     payload_json = process_generate_request_hooks(await request.json())
 
     # TODO could make this async with httpx
-    post_response = httpx.post(f"{api_url}/generate", headers=headers, json=payload_json)
+    post_response = httpx.post(
+        f"{api_url}/generate", headers=headers, json=payload_json
+    )
 
     response_json = process_generate_response_hooks(post_response.json())
 
