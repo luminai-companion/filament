@@ -1,8 +1,8 @@
-from fastapi import FastAPI, Request
-from starlette.responses import RedirectResponse, JSONResponse
 from typing import Union
 
 import httpx
+from fastapi import FastAPI, Request
+from starlette.responses import JSONResponse, RedirectResponse
 
 app = FastAPI(
     title="KoboldAI Interceptor",
