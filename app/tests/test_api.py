@@ -18,7 +18,9 @@ def test_api() -> None:
     software, which runs on its Echo and Dot devices, have clear leads in
     consumer adoption."""
 
-    request_data = {"values": [{"recordId": "a1", "data": {"text": text, "language": "en"}}]}
+    request_data = {
+        "values": [{"recordId": "a1", "data": {"text": text, "language": "en"}}]
+    }
 
     response = client.post("/spacy_entities", json=request_data)
     assert response.status_code == 200
