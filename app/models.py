@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional
-from pydantic import BaseModel
 
+from pydantic import BaseModel
 
 ENT_PROP_MAP = {
     "CARDINAL": "cardinals",

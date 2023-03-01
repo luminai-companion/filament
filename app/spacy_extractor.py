@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Dict, Iterable
+
 from spacy.language import Language
 
 
