@@ -1,8 +1,9 @@
-from typing import Union
-
 import httpx
+
+from app.emoji_predictor import predict_emojis
 from fastapi import FastAPI, Request
 from starlette.responses import JSONResponse, RedirectResponse
+from typing import Union
 
 app = FastAPI(
     title="KoboldAI Interceptor",
@@ -27,12 +28,22 @@ def handle_get(path: str, q: Union[str, None] = None) -> JSONResponse:
 
 
 def process_generate_request_hooks(request: dict) -> dict:
-    request["prompt"] = "Once upon a time, "  # example request interception
+    prompt_text = request["prompt"]
+
+    #prompt_text = "Once upon a time, "  # example request interception
+
+    request_prompt = prompt_text
     return request
 
 
 def process_generate_response_hooks(response: dict) -> dict:
-    response["results"][0]["text"] += " /gen /pos"  # example response interception
+    response_text = response["results"][0]["text"]
+
+    # if options.predict_emoji:  # TODO implement options
+    predicted_emoji = predict_emojis(response_text, k=1)
+    response_text += f" {predicted_emoji}"
+
+    response["results"][0]["text"] = response_text
     return response
 
 

@@ -1,5 +1,10 @@
 fastapi >= 0.75.0
 uvicorn >= 0.17.1
-spacy >= 3.2, <3.3
 pydantic >= 1.8.2
 httpx >= 0.23.3
+starlette~=0.25.0
+emoji~=2.2.0
+torch~=1.13.1
+Pillow~=9.4.0
+transformers~=4.26.1
+setuptools~=65.5.0
