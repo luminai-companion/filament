@@ -51,8 +51,12 @@ predictor_emojis = [
 ]
 
 
-def predict_emojis(text, model=emoji_model, processor=emoji_processor, emojis=emoji_images, k=4):
-    inputs = processor(text=text, images=emojis, return_tensors="pt", padding=True, truncation=True)
+def predict_emojis(
+    text, model=emoji_model, processor=emoji_processor, emojis=emoji_images, k=4
+):
+    inputs = processor(
+        text=text, images=emojis, return_tensors="pt", padding=True, truncation=True
+    )
     outputs = model(**inputs)
 
     logits_per_text = outputs.logits_per_text
@@ -60,7 +64,7 @@ def predict_emojis(text, model=emoji_model, processor=emoji_processor, emojis=em
     p_tensor = logits_per_text.softmax(dim=1)
 
     predictions = [torch.topk(p, k).indices.tolist() for p in p_tensor][0]
-    #probs = [torch.topk(p, k).values.tolist() for p in p_tensor][0]
+    # probs = [torch.topk(p, k).values.tolist() for p in p_tensor][0]
 
     emoji_text = emoji.emojize("".join([predictor_emojis[i] for i in predictions]))
 
