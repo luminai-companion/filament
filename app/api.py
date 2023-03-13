@@ -32,7 +32,7 @@ def process_generate_request_hooks(request: dict) -> dict:
 
     # prompt_text = "Once upon a time, "  # example request interception
 
-    request_prompt = prompt_text
+    request["prompt"] = prompt_text
     return request
 
 
