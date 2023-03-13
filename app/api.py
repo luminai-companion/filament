@@ -1,9 +1,10 @@
-import httpx
+from typing import Union
 
-from app.emoji_predictor import predict_emojis
+import httpx
 from fastapi import FastAPI, Request
 from starlette.responses import JSONResponse, RedirectResponse
-from typing import Union
+
+from app.emoji_predictor import predict_emojis
 
 app = FastAPI(
     title="KoboldAI Interceptor",

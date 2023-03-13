@@ -1,10 +1,9 @@
-import emoji
 import os
+
+import emoji
 import torch
-
 from PIL import Image
-from transformers import CLIPProcessor, CLIPModel
-
+from transformers import CLIPModel, CLIPProcessor
 
 checkpoint = "vincentclaes/emoji-predictor"
 x_, _, files = next(os.walk("./app/emojis"))
