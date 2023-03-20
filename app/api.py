@@ -7,6 +7,7 @@ from fastapi import FastAPI, Request
 from starlette.responses import JSONResponse, RedirectResponse
 
 from app.emoji_predictor import predict_emojis
+from app.memory import retrieve_memories_str
 
 app = FastAPI(
     title="KoboldAI Interceptor",
@@ -59,10 +60,33 @@ def parse_request(request: dict) -> tuple[dict, dict]:
     return request, params
 
 
+def inject_into_prompt(prompt: str, lines: str) -> str:
+    # find location of <START>
+    ind = prompt.find("<START>")
+
+    if ind >= 0:
+        prompt = prompt[:ind] + lines + "\n" + prompt[ind:]
+
+    return prompt
+
+
+def get_previous_memories(prompt: str) -> list[str]:
+    line = prompt.split("\n").filter(lambda x: x.find("[ Facts: ") >= 0)
+
+    if not line:
+        return []
+
+
 def process_generate_request_hooks(request: dict, params: dict) -> str:
     prompt_text = request["prompt"]
 
-    # prompt_text = "Once upon a time, "  # example request interception
+    # IDEA FIFO queue for memories
+
+    last_spoken_line = prompt_text.split("\n")[-2]
+    memories_str = retrieve_memories_str(last_spoken_line, num_memories=3)
+    prompt_text = inject_into_prompt(prompt_text, memories_str)
+
+    print(prompt_text)
 
     request["prompt"] = prompt_text
     return request
@@ -71,10 +95,11 @@ def process_generate_request_hooks(request: dict, params: dict) -> str:
 def process_generate_response_hooks(response: dict, params: dict) -> dict:
     response_text = trim_response(response["results"][0]["text"], params.stop_tokens)
 
+    # TODO disabled for memory testing
     # detect if there's already an emoji in the response and skip prediction if there is
-    if emoji.emoji_count(response_text) == 0:
-        predicted_emoji = predict_emojis(response_text, k=1)
-        response_text += f" {predicted_emoji}"
+    # if emoji.emoji_count(response_text) == 0:
+    #     predicted_emoji = predict_emojis(response_text, k=1)
+    #     response_text += f" {predicted_emoji}"
 
     response["results"][0]["text"] = response_text
     return response
@@ -92,7 +117,7 @@ async def handle_generate(request: Request) -> JSONResponse:
 
     # TODO could make this async with httpx
     post_response = httpx.post(
-        f"{params.kobold_url}/generate", headers=headers, json=payload, timeout=60
+        f"{params.kobold_url}/generate", headers=headers, json=payload, timeout=120
     )
 
     response = process_generate_response_hooks(post_response.json(), params)

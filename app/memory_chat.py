@@ -1,5 +1,5 @@
-import time
 import argparse
+import time
 
 from annoy import AnnoyIndex
 from sentence_transformers import SentenceTransformer
