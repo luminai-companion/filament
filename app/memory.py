@@ -36,10 +36,3 @@ def retrieve_memories(query: str, num_memories: int = 3) -> list[str]:
 
     items = [memories[i] for i in item_ids]
     return items
-
-
-def retrieve_memories_str(query: str, num_memories: int = 3) -> str:
-    items = retrieve_memories(query, num_memories)
-    memories_str = "[ Facts: " + "; ".join(items) + " ]"
-
-    return memories_str

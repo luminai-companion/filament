@@ -7,7 +7,7 @@ from fastapi import FastAPI, Request
 from starlette.responses import JSONResponse, RedirectResponse
 
 from app.emoji_predictor import predict_emojis
-from app.memory import retrieve_memories_str
+from app.memory import retrieve_memories
 
 app = FastAPI(
     title="KoboldAI Interceptor",
@@ -61,32 +61,37 @@ def parse_request(request: dict) -> tuple[dict, dict]:
 
 
 def inject_into_prompt(prompt: str, lines: str) -> str:
-    # find location of <START>
     ind = prompt.find("<START>")
 
     if ind >= 0:
-        prompt = prompt[:ind] + lines + "\n" + prompt[ind:]
+        prompt = prompt[:ind] + lines + prompt[ind:]
 
     return prompt
 
 
-def get_previous_memories(prompt: str) -> list[str]:
-    line = prompt.split("\n").filter(lambda x: x.find("[ Facts: ") >= 0)
-
-    if not line:
-        return []
+app.state.memory_fifo = []
 
 
 def process_generate_request_hooks(request: dict, params: dict) -> str:
     prompt_text = request["prompt"]
 
-    # IDEA FIFO queue for memories
-
     last_spoken_line = prompt_text.split("\n")[-2]
-    memories_str = retrieve_memories_str(last_spoken_line, num_memories=3)
+    new_memories = retrieve_memories(last_spoken_line, num_memories=3)
+    print(f"new_memories: {new_memories}")
+
+    # IDEA rather than a strict queue, maintain a priority queue with cosine distances?
+    memory_fifo = new_memories
+    memory_fifo.extend(x for x in app.state.memory_fifo if x not in memory_fifo)
+
+    memory_fifo = memory_fifo[0:13]
+    print(f"memory_fifo: {memory_fifo}")
+
+    memories_str = "[ Facts: " + "; ".join(memory_fifo) + " ]\n"
     prompt_text = inject_into_prompt(prompt_text, memories_str)
 
-    print(prompt_text)
+    # print(prompt_text)
+
+    app.state.memory_fifo = memory_fifo
 
     request["prompt"] = prompt_text
     return request
