@@ -60,3 +60,4 @@ bower_components
 __pycache__
 /.idea/
 .DS_Store
+/data/

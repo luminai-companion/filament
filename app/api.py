@@ -6,8 +6,8 @@ import httpx
 from fastapi import FastAPI, Request
 from starlette.responses import JSONResponse, RedirectResponse
 
+from app import memory
 from app.emoji_predictor import predict_emojis
-from app.memory import retrieve_memories
 
 app = FastAPI(
     title="KoboldAI Interceptor",
@@ -75,8 +75,9 @@ app.state.memory_fifo = []
 def process_generate_request_hooks(request: dict, params: dict) -> str:
     prompt_text = request["prompt"]
 
+    # TODO some number of previous context lines here instead of one line and FIFO?
     last_spoken_line = prompt_text.split("\n")[-2]
-    new_memories = retrieve_memories(last_spoken_line, num_memories=3)
+    new_memories = memory.retrieve_memories(last_spoken_line, num_memories=3)
     print(f"new_memories: {new_memories}")
 
     # IDEA rather than a strict queue, maintain a priority queue with cosine distances?
@@ -88,8 +89,6 @@ def process_generate_request_hooks(request: dict, params: dict) -> str:
 
     memories_str = "[ Facts: " + "; ".join(memory_fifo) + " ]\n"
     prompt_text = inject_into_prompt(prompt_text, memories_str)
-
-    # print(prompt_text)
 
     app.state.memory_fifo = memory_fifo
 
@@ -127,3 +126,39 @@ async def handle_generate(request: Request) -> JSONResponse:
 
     response = process_generate_response_hooks(post_response.json(), params)
     return JSONResponse(response, status_code=post_response.status_code)
+
+
+# TODO should eventually do this asynchronously. redis for queueing?
+@app.post("/api/memory/{memory_book_id}/embed")
+async def handle_memory_embed(memory_book_id: str, request: Request) -> JSONResponse:
+    payload = await request.json()
+    memories = payload["memories"]
+
+    if not memory.embed_memories(memory_book_id, memories):
+        return JSONResponse({"status": "embedding error"}, status_code=500)
+
+    return JSONResponse({"status": "OK"}, status_code=200)
+
+
+@app.head("/api/memory/{memory_book_id}")
+def handle_memory_check(memory_book_id: str) -> JSONResponse:
+    if not memory.check_embedding(memory_book_id):
+        return JSONResponse({"status": "memory book not found"}, status_code=404)
+
+    return JSONResponse({"status": "OK"}, status_code=200)
+
+
+@app.post("/api/memory/{memory_book_id}/prompt")
+async def handle_memory_prompt(memory_book_id: str, request: Request) -> JSONResponse:
+    if not memory.check_embedding(memory_book_id):
+        return JSONResponse({"status": "memory book not found"}, status_code=404)
+
+    payload = await request.json()
+    prompts = payload["prompts"]
+
+    memories = memory.retrieve_memories2(memory_book_id, prompts)
+
+    if not memories:
+        return JSONResponse({"status": "no memories retrieved"}, status_code=404)
+
+    return JSONResponse(memories, status_code=200)
