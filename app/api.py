@@ -132,9 +132,9 @@ async def handle_generate(request: Request) -> JSONResponse:
 @app.post("/api/memory/{memory_book_id}/embed")
 async def handle_memory_embed(memory_book_id: str, request: Request) -> JSONResponse:
     payload = await request.json()
-    memories = payload["memories"]
+    memory_book = payload["memory_book"]
 
-    if not memory.embed_memories(memory_book_id, memories):
+    if not memory.embed_memories(memory_book_id, memory_book):
         return JSONResponse({"status": "embedding error"}, status_code=500)
 
     return JSONResponse({"status": "OK"}, status_code=200)
@@ -155,10 +155,13 @@ async def handle_memory_prompt(memory_book_id: str, request: Request) -> JSONRes
 
     payload = await request.json()
     prompts = payload["prompts"]
+    num_memories_per_sentence = payload["num_memories_per_sentence"]
 
-    memories = memory.retrieve_memories2(memory_book_id, prompts)
+    memories_df = memory.retrieve_memories(
+        memory_book_id, prompts, num_memories_per_sentence
+    )
 
-    if not memories:
+    if memories_df.shape[0] == 0:
         return JSONResponse({"status": "no memories retrieved"}, status_code=404)
 
-    return JSONResponse(memories, status_code=200)
+    return JSONResponse(memories_df.to_dict(orient="records"), status_code=200)

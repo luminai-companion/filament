@@ -40,11 +40,6 @@ def build_index(memories: list[str]) -> AnnoyIndex:
     return idx
 
 
-# IDEA can we compute a distance matrix of memories to find duplicates or near-duplicates?
-# IDEA general memory books that can be shared across bots for "interests", like history, art, music
-# IDEA chatgpt conversation summaries -> memories?
-
-
 def check_embedding(memory_book_id: str) -> bool:
     # TODO check db
 
@@ -106,7 +101,7 @@ delete from memories where memory_book_id = ?
     idx_filename = f"{config.ai_data_dir}/{memory_book_id}.ann"
     idx.save(idx_filename)
 
-    return memories_df
+    return True
 
 
 def load_memory_book_file(filename: str) -> dict:
@@ -140,7 +135,7 @@ def tokenize_prompts(prompts: list[str]) -> list[str]:
 def retrieve_memories(
     memory_book_id: str, prompts: list[str], num_memories_per_sentence: int = 3
 ) -> pd.DataFrame:
-    memories_df, idx = load_memory_book(memory_book_id)
+    memory_book_df, idx = load_memory_book(memory_book_id)
 
     # TODO sentencizing will get weird with actions in asterisks
     sentences = tokenize_prompts(prompts)
@@ -166,6 +161,6 @@ def retrieve_memories(
         .reset_index()
     )
 
-    retrievals_df = memories_df.merge(neighbors_df, on="memory_id").sort_values("dist")
+    memories_df = memory_book_df.merge(neighbors_df, on="memory_id").sort_values("dist")
 
-    return retrievals_df
+    return memories_df
