@@ -61,3 +61,4 @@ __pycache__
 /.idea/
 .DS_Store
 /data/
+/.env
