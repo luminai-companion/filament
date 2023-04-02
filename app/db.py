@@ -2,12 +2,17 @@ import sqlite3
 
 from app.config import config
 
-conn = sqlite3.connect(f"{config.ai_data_dir}/luminai.db")
-
 # look i know this is the worst thing in the world but i don't feel like using migrations
 
 
+def get_connection() -> sqlite3.Connection:
+    conn = sqlite3.connect(f"{config.ai_data_dir}/luminai.db")
+
+    return conn
+
+
 def initialize_db() -> bool:
+    conn = get_connection()
     cur = conn.cursor()
 
     cur.execute(

@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "luminai-service"
+name = "filament"
 version = "0.1.0"
 description = ""
 authors = ["Pleasant-Cry <pleasant.cry@gmail.com>"]
@@ -26,6 +26,7 @@ python-dotenv = "^1.0.0"
 flake8 = "^6.0.0"
 ipython = "^8.12.0"
 pyflakes = "^3.0.1"
+pytest = "^7.2.2"
 
 [build-system]
 requires = ["poetry-core"]

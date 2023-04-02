@@ -63,7 +63,8 @@ def embed_memories(memory_book_id: str, memory_book: dict) -> bool:
     memories_df["memory_id"] = memories_df.index
     memories_df["source"] = "book"
 
-    cur = db.conn.cursor()
+    conn = db.get_connection()
+    cur = conn.cursor()
 
     cur.execute(
         """
@@ -88,12 +89,12 @@ delete from memories where memory_book_id = ?
 
     memories_df.to_sql(
         "memories",
-        db.conn,
+        conn,
         if_exists="append",
         index=False,
     )
 
-    db.conn.commit()
+    conn.commit()
 
     memories = memories_df.loc[memories_df["enabled"]]["entry"].tolist()
 
@@ -112,9 +113,11 @@ def load_memory_book_file(filename: str) -> dict:
 
 
 def load_memory_book(memory_book_id: str) -> tuple[pd.DataFrame, AnnoyIndex]:
+    conn = db.get_connection()
+
     memories_df = pd.read_sql(
         "select * from memories where memory_book_id = :id and enabled = 1",
-        db.conn,
+        conn,
         params={"id": memory_book_id},
     )
 
