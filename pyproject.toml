@@ -5,7 +5,6 @@ description = ""
 authors = ["Pleasant-Cry <pleasant.cry@gmail.com>"]
 license = "AGPL-3"
 readme = "README.md"
-packages = [{include = "luminai_service"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"

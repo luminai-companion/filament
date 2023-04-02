@@ -1,12 +1,25 @@
-FROM tiangolo/uvicorn-gunicorn-fastapi:python3.9
-ENV PORT 8080
-ENV APP_MODULE app.api:app
-ENV LOG_LEVEL debug
-ENV WEB_CONCURRENCY 2
+FROM python:3.10
 
-COPY ./requirements.txt ./requirements.txt
-RUN pip install -r requirements.txt
+RUN pip3 install poetry==1.4.1
 
-RUN spacy download en_core_web_sm
+WORKDIR /app
+COPY poetry.lock pyproject.toml /app
+RUN poetry config virtualenvs.create false && \
+    poetry install --no-interaction --no-ansi
+RUN poetry run spacy download en_core_web_sm
 
-COPY ./app /app/app
+COPY . /app
+RUN mkdir /app/data
+
+# TODO figure out how to pull transformers models into a layer instead of fetching them
+# on first run
+
+ENV UVICORN_HOST=0.0.0.0 \
+    UVICORN_PORT=9000 \
+    UVICORN_LOG_LEVEL=debug \
+    WEB_CONCURRENCY=2 \
+    AI_DATA_DIR=/app/data
+
+EXPOSE 9000
+
+CMD ["uvicorn", "app.api:app"]
