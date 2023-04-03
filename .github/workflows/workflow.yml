@@ -50,7 +50,8 @@ jobs:
       with:
         extra_args: --all-files
     - name: Run tests
-      continue-on-error: true
+      env:
+        AI_DATA_DIR: "${{ github.workspace }}/data"
       run: poetry run pytest --junitxml=pytest.xml
     # - name: Pytest coverage comment
     #   uses: MishaKav/pytest-coverage-comment@main
