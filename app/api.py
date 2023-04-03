@@ -4,15 +4,15 @@ from typing import Union
 import emoji
 import httpx
 from fastapi import FastAPI, Request
-from starlette.responses import JSONResponse, RedirectResponse
+from starlette.responses import JSONResponse, RedirectResponse, Response
 
 from app import memory
 from app.emoji_predictor import predict_emojis
 
 app = FastAPI(
-    title="KoboldAI Interceptor",
-    version="1.0",
-    description="Request/response interception proof-of-concept",
+    title="LuminAI filament",
+    version="0.1.0",
+    description="Services for the LuminAI companion",
 )
 
 
@@ -143,9 +143,9 @@ async def handle_memory_embed(memory_book_id: str, request: Request) -> JSONResp
 @app.head("/api/memory/{memory_book_id}")
 def handle_memory_check(memory_book_id: str) -> JSONResponse:
     if not memory.check_embedding(memory_book_id):
-        return JSONResponse({"status": "memory book not found"}, status_code=404)
+        return Response(status_code=404)
 
-    return JSONResponse({"status": "OK"}, status_code=200)
+    return Response(status_code=200)
 
 
 @app.post("/api/memory/{memory_book_id}/prompt")
