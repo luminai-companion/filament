@@ -12,10 +12,17 @@ Implemented features:
 ## Resources
 
 Dev requirements:
-- Python 3.10 (tested with Python 3.10.10)
+- Python 3.10 (tested with Python 3.10.10) (you might like pyenv)
 - poetry 1.4.1
 
-After installing dependencies with poetry, you'll also need to download the spaCy
+Install dependencies with poetry:
+
+``` sh
+poetry env use 3.10
+poetry install
+```
+
+After installing dependencies, you'll also need to download the spaCy
 language model:
 
 ``` sh
