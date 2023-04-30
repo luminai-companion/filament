@@ -154,7 +154,7 @@ async def handle_memory_prompt(memory_book_id: str, request: Request) -> JSONRes
         return JSONResponse({"status": "memory book not found"}, status_code=404)
 
     payload = await request.json()
-    prompts = payload["prompts"]
+    prompts = payload["prompt"]
     num_memories_per_sentence = payload["num_memories_per_sentence"]
 
     memories_df = memory.retrieve_memories(

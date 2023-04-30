@@ -37,6 +37,7 @@ def build_index(memories: list[str]) -> AnnoyIndex:
         idx.add_item(i, embedding)
 
     idx.build(NUM_TREES)
+
     return idx
 
 
@@ -96,7 +97,9 @@ delete from memories where memory_book_id = ?
 
     conn.commit()
 
-    memories = memories_df.loc[memories_df["enabled"]]["entry"].tolist()
+    # memories aren't coming in from agnai with enabled = 1
+    # memories = memories_df.loc[memories_df["enabled"]]["entry"].tolist()
+    memories = memories_df["entry"].tolist()
 
     idx = build_index(memories)
     idx_filename = f"{config.ai_data_dir}/{memory_book_id}.ann"
@@ -116,7 +119,7 @@ def load_memory_book(memory_book_id: str) -> tuple[pd.DataFrame, AnnoyIndex]:
     conn = db.get_connection()
 
     memories_df = pd.read_sql(
-        "select * from memories where memory_book_id = :id and enabled = 1",
+        "select * from memories where memory_book_id = :id",  # and enabled = 1
         conn,
         params={"id": memory_book_id},
     )
@@ -141,7 +144,8 @@ def retrieve_memories(
     memory_book_df, idx = load_memory_book(memory_book_id)
 
     # TODO sentencizing will get weird with actions in asterisks
-    sentences = tokenize_prompts(prompts)
+    # sentences = tokenize_prompts(prompts)
+    sentences = prompts
     embeddings = MODEL.encode(sentences)
 
     neighbors_df = pd.DataFrame(columns=["memory_id", "dist"])
