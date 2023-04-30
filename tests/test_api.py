@@ -33,7 +33,7 @@ def test_memory() -> None:
     assert check_response.status_code == 200
 
     prompts = ["charity.", "vacation.", "cats."]
-    prompt_payload = {"prompts": prompts, "num_memories_per_sentence": 3}
+    prompt_payload = {"prompt": prompts, "num_memories_per_sentence": 3}
 
     prompt_response = client.post("/api/memory/aiden_book/prompt", json=prompt_payload)
     assert prompt_response.status_code == 200
